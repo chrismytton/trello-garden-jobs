@@ -31,7 +31,7 @@ card_name = "Jobs for week #{week}"
 
 list = Trello::List.find(ENV['TRELLO_LIST_ID'])
 
-if list.cards.any? { |c| c.name == card_name }
+if list.board.cards.any? { |c| c.name == card_name }
   warn "Existing card found: #{card_name}"
   exit
 end
