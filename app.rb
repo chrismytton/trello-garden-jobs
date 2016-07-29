@@ -8,26 +8,19 @@ Trello.configure do |config|
   config.member_token = ENV['TRELLO_MEMBER_TOKEN']
 end
 
-def date_of_next(day)
-  date  = Date.parse(day)
-  delta = date > Date.today ? 0 : 7
-  date + delta
-end
-
-def get_jobs_for_week(week)
-  warn "Looking up jobs for week #{week}"
-  morph_api_url = 'https://api.morph.io/chrismytton/gardeners-world-what-to-do-now/data.json'
-  morph_api_key = ENV['MORPH_API_KEY']
+def get_jobs_for_month(month)
+  warn "Looking up jobs for #{month}"
+  morph_api_url = 'https://api.morph.io/chrismytton/gardeners-world-monthly-jobs/data.json'
   result = RestClient.get(morph_api_url, params: {
-    key: morph_api_key,
-    query: %Q{select section, job from 'data' where week = #{week}}
+    key: ENV['MORPH_API_KEY'],
+    query: %Q{select section, job from 'data' where month = "#{month}"}
   })
   JSON.parse(result, symbolize_names: true)
 end
 
-week = Time.now.strftime('%W').to_i.succ
+month = Date::MONTHNAMES[Date.today.month]
 
-card_name = "Jobs for week #{week}"
+card_name = "Garden jobs for #{month}"
 
 list = Trello::List.find(ENV['TRELLO_LIST_ID'])
 
@@ -39,22 +32,13 @@ end
 card = Trello::Card.create(
   list_id: list.id,
   name: card_name,
-  desc: "http://www.gardenersworld.com/what-to-do-now/",
-  due: date_of_next("Monday").to_time.iso8601
+  desc: "Source: http://www.gardenersworld.com/what-to-do-now/\n\nScraper: https://morph.io/chrismytton/gardeners-world-monthly-jobs"
 )
 
-list_names = {
-  'around-garden-checklist' => 'Around the garden',
-  'flowers-checklist' => 'Flowers',
-  'fruit-veg-checklist' => 'Fruit and veg',
-  'greenhouse-checklist' => 'Greenhouse'
-}
-
-
-items = get_jobs_for_week(week).group_by { |i| i[:section] }
+items = get_jobs_for_month(month).group_by { |i| i[:section] }
 
 items.each do |section_name, items|
-  checklist = Trello::Checklist.create(card_id: card.id, name: list_names[section_name])
+  checklist = Trello::Checklist.create(card_id: card.id, name: section_name)
   items.each do |item|
     checklist.add_item(item[:job])
   end
