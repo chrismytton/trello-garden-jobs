@@ -34,7 +34,7 @@ jobs:
         bundle install --jobs 4 --retry 3 --without=development
 
     - name: Generate card
-      run: bundle exec ruby app.rb
+      run: bin/make_trello_card
       env:
         TRELLO_DEVELOPER_PUBLIC_KEY: ${{ secrets.TRELLO_DEVELOPER_PUBLIC_KEY }}
         TRELLO_MEMBER_TOKEN: ${{ secrets.TRELLO_MEMBER_TOKEN }}
