@@ -1,6 +1,8 @@
-require 'bundler'
-Bundler.require
-Dotenv.load
+require 'bundler/setup'
+require 'trello'
+require 'rest-client'
+require 'json'
+require 'date'
 
 # https://github.com/jeremytregunna/ruby-trello#configuration
 Trello.configure do |config|
@@ -8,14 +10,10 @@ Trello.configure do |config|
   config.member_token = ENV['TRELLO_MEMBER_TOKEN']
 end
 
-def get_jobs_for_month(month)
-  warn "Looking up jobs for #{month}"
-  morph_api_url = 'https://api.morph.io/chrismytton/gardeners-world-monthly-jobs/data.json'
-  result = RestClient.get(morph_api_url, params: {
-    key: ENV['MORPH_API_KEY'],
-    query: %Q{select section, job from 'data' where month = "#{month}"}
-  })
-  JSON.parse(result, symbolize_names: true)
+def jobs
+  api_url = 'https://www.chrismytton.uk/gardeners-world-monthly-jobs/jobs.json'
+  result = RestClient.get(api_url)
+  JSON.parse(result)
 end
 
 month = Date::MONTHNAMES[Date.today.month]
@@ -32,14 +30,12 @@ end
 card = Trello::Card.create(
   list_id: list.id,
   name: card_name,
-  desc: "Source: http://www.gardenersworld.com/what-to-do-now/\n\nScraper: https://morph.io/chrismytton/gardeners-world-monthly-jobs"
+  desc: "Source: http://www.gardenersworld.com/what-to-do-now/\n\nScraper: https://github.com/chrismytton/gardeners-world-monthly-jobs"
 )
 
-items = get_jobs_for_month(month).group_by { |i| i[:section] }
-
-items.each do |section_name, items|
+jobs[month].each do |section_name, items|
   checklist = Trello::Checklist.create(card_id: card.id, name: section_name)
   items.each do |item|
-    checklist.add_item(item[:job])
+    checklist.add_item(item)
   end
 end
