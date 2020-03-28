@@ -39,3 +39,5 @@ jobs[month].each do |section_name, items|
     checklist.add_item(item)
   end
 end
+
+puts "Created card for #{month}"
