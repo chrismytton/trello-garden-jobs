@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'pry'
+gem 'pry', group: :development
 gem 'ruby-trello', require: 'trello'
 gem 'rest-client'
