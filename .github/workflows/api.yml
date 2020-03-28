@@ -36,6 +36,6 @@ jobs:
     - name: Generate card
       run: bundle exec ruby app.rb
       env:
-        TRELLO_DEVELOPER_PUBLIC_KEY: ${{ env.TRELLO_DEVELOPER_PUBLIC_KEY }}
-        TRELLO_MEMBER_TOKEN: ${{ env.TRELLO_MEMBER_TOKEN }}
-        TRELLO_LIST_ID: ${{ env.TRELLO_LIST_ID }}
+        TRELLO_DEVELOPER_PUBLIC_KEY: ${{ secrets.TRELLO_DEVELOPER_PUBLIC_KEY }}
+        TRELLO_MEMBER_TOKEN: ${{ secrets.TRELLO_MEMBER_TOKEN }}
+        TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID }}
